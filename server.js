@@ -23,7 +23,11 @@ const startServer = async () => {
 
         // Global Middleware
         app.use(cors({
-            origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+            origin: [
+                'http://localhost:5173',
+                'https://ai-summarize-frontend-eta.vercel.app',
+                process.env.FRONTEND_URL
+            ].filter(Boolean),
             credentials: true
         }));
         app.use(express.json());
@@ -31,25 +35,6 @@ const startServer = async () => {
 
         // Core Routes
         app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-
-        // Debug Route
-        app.get('/api/debug/routes', (req, res) => {
-            const routes = [];
-            app._router.stack.forEach((middleware) => {
-                if (middleware.route) {
-                    routes.push(`${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
-                } else if (middleware.name === 'router') {
-                    middleware.handle.stack.forEach((handler) => {
-                        const route = handler.route;
-                        if (route) {
-                            routes.push(`${Object.keys(route.methods)} ${middleware.regexp} ${route.path}`);
-                        }
-                    });
-                }
-            });
-            res.json(routes);
-        });
-
         app.use('/api/user', userRoutes);
         app.use('/api/summarize', summaryRoutes);
 
