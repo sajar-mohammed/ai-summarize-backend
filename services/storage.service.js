@@ -30,4 +30,13 @@ const getSummaryCount = async (userId) => {
     }
 };
 
-module.exports = { getHistory, saveSummary, getSummaryCount };
+const deleteSummary = async (id) => {
+    try {
+        return await Summary.findByIdAndDelete(id);
+    } catch (error) {
+        console.error('Error deleting summary:', error);
+        throw error;
+    }
+};
+
+module.exports = { getHistory, saveSummary, getSummaryCount, deleteSummary };
