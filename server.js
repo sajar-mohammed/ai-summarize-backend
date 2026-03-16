@@ -1,6 +1,20 @@
+const Sentry = require("@sentry/node");
+const { nodeProfilingIntegration } = require("@sentry/profiling-node");
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+dotenv.config();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+  // Performance Monitoring
+  tracesSampleRate: 1.0, //  Capture 100% of the transactions
+});
+
 const connectDB = require('./config/db');
 
 // Route Imports
@@ -37,6 +51,9 @@ const startServer = async () => {
         app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
         app.use('/api/user', userRoutes);
         app.use('/api/summarize', summaryRoutes);
+
+        // The error handler must be registered before any other error middleware and after all controllers
+        Sentry.setupExpressErrorHandler(app);
 
         // Global Error Handling (Must be last)
         app.use(errorHandler);
